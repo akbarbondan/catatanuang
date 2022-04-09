@@ -1,0 +1,61 @@
+import 'package:flutter/foundation.dart';
+import 'package:sqflite/sqflite.dart' as sql;
+
+class HelperSql {
+  static Future<void> createTables(sql.Database database) async {
+    await database.execute("""
+    CREATE TABLE Items(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, title TEXT, deskription TEXT, createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)
+""");
+  }
+
+  // Membuat database
+  static Future<sql.Database> db() async {
+    return sql.openDatabase('Kindacode.db', version: 1,
+        onCreate: (sql.Database database, int version) async {
+      await createTables(database);
+    });
+  }
+
+  static Future<int> cerateItem(String title, String deskrption) async {
+    final db = await HelperSql.db();
+    final data = {'title': title, 'deskription': deskrption};
+    final id = await db.insert('items', data,
+        conflictAlgorithm: sql.ConflictAlgorithm.replace);
+    print("menjalankan methon create item");
+    return id;
+  }
+
+  // ambil 1 item
+  static Future<List<Map<String, dynamic>>> getItem(int id) async {
+    final db = await HelperSql.db();
+    return db.query('items', where: "id = ?", whereArgs: [id], limit: 1);
+  }
+
+  //  ambil semua item
+  static Future<List<Map<String, dynamic>>> getAllItems() async {
+    final db = await HelperSql.db();
+    return db.query('items', orderBy: "id");
+  }
+
+  static Future<int> updateData(int id, String title, String deckripsi) async {
+    final db = await HelperSql.db();
+    final data = {
+      'title': title,
+      'deskription': deckripsi,
+      'createdAt': DateTime.now().toString()
+    };
+
+    final result =
+        await db.update('items', data, where: 'id=?', whereArgs: [id]);
+    return result;
+  }
+
+  static Future<void> deleteData(int id) async {
+    final db = await HelperSql.db();
+    try {
+      await db.delete('items', where: 'id=?', whereArgs: [id]);
+    } catch (e) {
+      debugPrint("Shomting whet worng when deleting");
+    }
+  }
+}

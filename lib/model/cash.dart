@@ -1,31 +1,29 @@
 part of 'models.dart';
 
 class Cash {
-  int? id;
-  String? catatan;
-  String? balance;
-  DateTime? date;
+  int id;
+  int balance;
+  String catatan;
+  String category;
 
-  Cash({this.id, this.catatan, this.balance, this.date});
-
+  Cash({this.id, this.balance, this.catatan, this.category});
   Map<String, dynamic> toMap() {
-    var map = Map<String, dynamic>();
-
-    if (id != null) {
-      map['id'] = id;
-    }
-
-    map['balance'] = balance;
-    map['catatan'] = catatan;
-    map['date'] = date;
+    var map = <String, dynamic>{
+      'id': id,
+      'balance': balance,
+      'catatan': catatan,
+      'category': category,
+    };
 
     return map;
   }
 
-  Cash.fromMap(Map<String, dynamic> map) {
-    this.id = map['id'];
-    this.catatan = map['catatan'];
-    this.balance = map['balance'];
-    this.date = map['date'];
+  factory Cash.fromMap(Map<String, dynamic> data) {
+    return Cash(
+        id: data['id'],
+        balance: data['balance'],
+        catatan: data['catatan'],
+        category: data['category']);
   }
 }
+

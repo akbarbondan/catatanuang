@@ -1,0 +1,181 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:personalcahs/db/sql.dart';
+import 'package:personalcahs/db/sqlite.dart';
+import 'package:personalcahs/model/models.dart';
+import 'package:personalcahs/ui/pages/pages.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+// ambil semua data
+
+  // void outBalance(int index, int amount) {
+  // itemss[index]['balance'] + amount;
+  // }
+
+  // void inBalance(int index, int amount) {
+  // itemss[index]['balance'] - amount;
+  // }
+
+  List<Map<String, dynamic>> itemss = [];
+  bool isLoading = true;
+  // Function ambil semua data
+  void referenceData() async {
+    final data = await HelperSql.getAllItems();
+
+    setState(() {
+      itemss = data;
+      isLoading = false;
+    });
+
+    print(itemss);
+  }
+
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
+  Future<void> addItem() async {
+    await HelperSql.cerateItem(
+        _titleController.text, _descriptionController.text);
+    referenceData();
+  }
+
+  Future<void> update(int id) async {
+    await HelperSql.updateData(
+        id, _titleController.text, _descriptionController.text);
+
+    referenceData();
+  }
+
+  void deleteData(int id) async {
+    await HelperSql.deleteData(id);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Data berhasil dihapus")));
+
+    referenceData();
+  }
+
+  void showform(int id) async {
+    if (id != null) {
+      final existingJournal = itemss.firstWhere((element) => element[id] == id);
+      _titleController.text = existingJournal['title'];
+      _descriptionController.text = existingJournal['deskription'];
+    }
+
+    showModalBottomSheet(
+        context: context,
+        elevation: 5,
+        isScrollControlled: true,
+        builder: (context) => Container(
+              padding: EdgeInsets.only(
+                top: 15,
+                left: 15,
+                right: 15,
+                // this will prevent the soft keyboard from covering the text fields
+                bottom: MediaQuery.of(context).viewInsets.bottom + 120,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  TextField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(hintText: 'Title'),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(hintText: 'Description'),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Save new journal
+                      if (id == null) {
+                        await addItem();
+                      }
+
+                      if (id != null) {
+                        await update(id);
+                      }
+
+                      // Clear the text fields
+                      _titleController.text = '';
+                      _descriptionController.text = '';
+
+                      // Close the bottom sheet
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(id == null ? 'Create New' : 'Update'),
+                  )
+                ],
+              ),
+            ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    referenceData();
+  }
+
+  List items = [0, 1, 2, 3, 4];
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ListView.builder(
+              itemCount: (items != null) ? 0 : items.length,
+              itemBuilder: (context, index) => Card(
+                color: Colors.orange[200],
+                margin: const EdgeInsets.all(15),
+                child: ListTile(
+                    title: Text(items[index]),
+                    subtitle: Text(items[index]),
+                    trailing: SizedBox(
+                      width: 100,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => showform(itemss[index]['id']),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => deleteData(itemss[index]['id']),
+                          ),
+                        ],
+                      ),
+                    )),
+              ),
+            ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () => showform(null),
+      ),
+    );
+  }
+}
