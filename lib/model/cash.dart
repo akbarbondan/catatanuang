@@ -26,4 +26,3 @@ class Cash {
         category: data['category']);
   }
 }
-

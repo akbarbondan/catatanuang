@@ -78,4 +78,19 @@ class DBHelper {
 
     return result;
   }
+
+  static Future<int> upadateData(
+      int id, int balance, String catatan, String category) async {
+    final db = await DBHelper.db();
+    final data = {
+      'balance': balance,
+      'catatan': catatan,
+      'category': category,
+      'createdAt': DateTime.now().toString()
+    };
+    final result =
+        await db.update('uangku', data, where: 'id =?', whereArgs: [id]);
+
+    return result;
+  }
 }

@@ -10,23 +10,45 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   TextEditingController balance = TextEditingController();
   TextEditingController catatan = TextEditingController();
+  TextEditingController category = TextEditingController();
   String category_masuk = "Masuk";
   String categoty_keluar = "Keluar";
-
-  void addItem(Cash cash) async {
-    var db = await DBHelper.createItem(cash);
-    calculate();
-    calculateinBalance();
-    calculateoutBalance();
-    refreshData();
-  }
-
-  void delete() {}
-
   int total = 0;
   int totalIn = 0;
   int totalOut = 0;
   List<Cash> datas = [];
+  void addItem(Cash cash) async {
+    var db = await DBHelper.createItem(cash);
+    refreshData();
+    calculate();
+    calculateinBalance();
+    calculateoutBalance();
+    setState(() {});
+  }
+
+  void delete(int id, int index) async {
+    final db = DBHelper.deletData(id);
+
+    refreshData();
+    calculate();
+    calculateinBalance();
+    calculateoutBalance();
+    setState(() {
+      datas.removeAt(index);
+    });
+  }
+
+  Future<void> update(int id) async {
+    final db = DBHelper.db();
+    await DBHelper.upadateData(
+        id, int.parse(balance.text), catatan.text, category.text);
+    calculate();
+    calculateinBalance();
+    calculateoutBalance();
+    refreshData();
+    setState(() {});
+  }
+
   void refreshData() async {
     final data = await DBHelper.getItems();
     setState(() {
@@ -36,22 +58,22 @@ class _HomePageState extends State<HomePage> {
 
   void calculate() async {
     int total_sum = (await DBHelper.calculate())[0]['total'];
-    print(total_sum);
 
     (total_sum == null) ? total_sum = 0 : total = total_sum;
-
     refreshData();
   }
 
   void calculateinBalance() async {
     int total_inBalance = (await DBHelper.calculateIn())[0]['inbalance'];
-    print(total_inBalance);
-    totalIn = total_inBalance;
+    (total_inBalance != null) ? totalIn = total_inBalance : total_inBalance = 0;
     refreshData();
   }
 
   void calculateoutBalance() async {
     int total_outBlance = (await DBHelper.calculateOut())[0]['outbalance'];
+    (total_outBlance != null)
+        ? totalOut = total_outBlance
+        : total_outBlance = 0;
     totalOut = total_outBlance;
     refreshData();
   }
@@ -59,9 +81,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    calculate();
     calculateinBalance();
     calculateoutBalance();
+    calculate();
+    refreshData();
   }
 
   @override
@@ -155,19 +178,30 @@ class _HomePageState extends State<HomePage> {
                     height: 10,
                   ),
                   const Text("List transaksi"),
-                  const SizedBox(
-                    height: 5,
-                  ),
                   Container(
                       height: 600,
                       child: ListView.builder(
                           itemCount: datas.length,
                           itemBuilder: (context, index) => Padding(
                                 padding: const EdgeInsets.only(top: 8),
-                                child: card(
-                                    datas[index].balance,
-                                    datas[index].catatan,
-                                    datas[index].category),
+                                child: Card_list(
+                                  datas[index].balance,
+                                  datas[index].catatan,
+                                  datas[index].category,
+                                  onTap: () {
+                                    print("Delet");
+                                    dialogdelte(
+                                        Cash(id: datas[index].id), index);
+                                  },
+                                  onTapUpdate: () {
+                                    print("update");
+                                    updateDialog(datas[index].id);
+                                    balance.text =
+                                        datas[index].balance.toString();
+                                    catatan.text = datas[index].catatan;
+                                    category.text = datas[index].category;
+                                  },
+                                ),
                               ))),
                 ],
               )
@@ -187,9 +221,11 @@ class _HomePageState extends State<HomePage> {
               width: 10,
             ),
             FloatingActionButton(
-              onPressed: () async {
-                await outBalance();
-              },
+              onPressed: (total == 0)
+                  ? null
+                  : () async {
+                      await outBalance();
+                    },
               child: Icon(MdiIcons.minus),
             )
           ],
@@ -197,6 +233,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future addBalance() async {
+    setState(() {
+      balance.text = '';
+      catatan.text = '';
+      category.text = '';
+    });
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -249,6 +290,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future outBalance() async {
+    setState(() {
+      balance.text = '';
+      catatan.text = '';
+      category.text = '';
+    });
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -298,71 +344,96 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-}
 
-class card extends StatelessWidget {
-  final int balance;
-  final String catan;
-  final String category;
-  card(this.balance, this.catan, this.category);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10), color: Colors.grey[300]),
-      child: Container(
-        padding: EdgeInsets.only(right: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              height: 60,
-              width: 60,
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(10),
+  Future updateDialog(int id) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Update Data'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              TextField(
+                autofocus: true,
+                controller: balance,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(), hintText: "Jumlah Uang"),
               ),
-              child: Icon(
-                (category == "Masuk") ? Icons.add : MdiIcons.minus,
-                color: Colors.white,
+              SizedBox(
+                height: 8,
               ),
+              TextField(
+                controller: catatan,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(), hintText: "Catatan"),
+              ),
+              SizedBox(
+                height: 8,
+              ),
+              TextField(
+                enabled: false,
+                controller: category,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Category",
+                    labelText: "Category"),
+              ),
+              SizedBox(
+                height: 8,
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            new FlatButton(
+              onPressed: () {
+                update(id);
+                Navigator.pop(context);
+              },
+              textColor: Theme.of(context).primaryColor,
+              child: const Text('Update'),
             ),
-            Container(
-              width: MediaQuery.of(context).size.width - 180,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    NumberFormat.currency(locale: 'id-ID', symbol: 'Rp. ')
-                        .format(balance),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: (category == "Masuk") ? Colors.green : Colors.pink,
-                    ),
-                  ),
-                  Text(
-                    catan,
-                    style: TextStyle(
-                        color:
-                            (category == "Masuk") ? Colors.green : Colors.pink),
-                  )
-                ],
-              ),
-            ),
-            Text(
-              category,
-              style: TextStyle(
-                color: (category == "Masuk") ? Colors.green : Colors.pink,
-              ),
-            )
           ],
-        ),
-      ),
+        );
+      },
+    );
+  }
+
+  Future dialogdelte(Cash cash, int position) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delet Data'),
+          content: new Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[Text("Apakah anda ingin menghapus?")],
+          ),
+          actions: <Widget>[
+            new FlatButton(
+              onPressed: () {
+                delete(cash.id, position);
+                Navigator.pop(context);
+
+                refreshData();
+              },
+              textColor: Theme.of(context).primaryColor,
+              child: const Text('Ya'),
+            ),
+            new FlatButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              textColor: Colors.grey,
+              child: const Text('Tidak'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
