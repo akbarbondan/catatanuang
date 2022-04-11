@@ -195,7 +195,8 @@ class _HomePageState extends State<HomePage> {
                                   },
                                   onTapUpdate: () {
                                     print("update");
-                                    updateDialog(datas[index].id);
+                                    updateDialog(
+                                        datas[index].id, datas[index].category);
                                     balance.text =
                                         datas[index].balance.toString();
                                     catatan.text = datas[index].catatan;
@@ -249,6 +250,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextField(
+                keyboardType: TextInputType.number,
                 autofocus: true,
                 controller: balance,
                 decoration: InputDecoration(
@@ -306,6 +308,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextField(
+                keyboardType: TextInputType.number,
                 autofocus: true,
                 controller: balance,
                 decoration: InputDecoration(
@@ -345,7 +348,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future updateDialog(int id) async {
+  Future updateDialog(int id, String categoryy) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -357,6 +360,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextField(
+                keyboardType: TextInputType.number,
                 autofocus: true,
                 controller: balance,
                 decoration: InputDecoration(
