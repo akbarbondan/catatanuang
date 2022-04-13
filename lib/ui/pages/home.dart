@@ -8,15 +8,25 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController balance = TextEditingController();
+  TextEditingController debit = TextEditingController();
+  TextEditingController credit = TextEditingController();
   TextEditingController catatan = TextEditingController();
-  TextEditingController category = TextEditingController();
-  String category_masuk = "Masuk";
-  String categoty_keluar = "Keluar";
+  TextEditingController status = TextEditingController();
+  String status_masuk = "Masuk";
+  String status_keluar = "Keluar";
   int total = 0;
   int totalIn = 0;
   int totalOut = 0;
   List<Cash> datas = [];
+  List<String> items;
+  String selected;
+  void refreshData() async {
+    final data = await DBHelper.getItems();
+    setState(() {
+      datas = data;
+    });
+  }
+
   void addItem(Cash cash) async {
     var db = await DBHelper.createItem(cash);
     refreshData();
@@ -38,10 +48,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> update(int id) async {
+  Future<void> update(int id, String category) async {
     final db = DBHelper.db();
     await DBHelper.upadateData(
-        id, int.parse(balance.text), catatan.text, category.text);
+        id,
+        (category == "Masuk") ? int.parse(debit.text) : 0,
+        (category == "Keluar") ? int.parse(credit.text) : 0,
+        catatan.text,
+        category);
     calculate();
     calculateinBalance();
     calculateoutBalance();
@@ -49,16 +63,8 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  void refreshData() async {
-    final data = await DBHelper.getItems();
-    setState(() {
-      datas = data;
-    });
-  }
-
   void calculate() async {
     int total_sum = (await DBHelper.calculate())[0]['total'];
-
     (total_sum == null) ? total_sum = 0 : total = total_sum;
     refreshData();
   }
@@ -66,6 +72,7 @@ class _HomePageState extends State<HomePage> {
   void calculateinBalance() async {
     int total_inBalance = (await DBHelper.calculateIn())[0]['inbalance'];
     (total_inBalance != null) ? totalIn = total_inBalance : total_inBalance = 0;
+
     refreshData();
   }
 
@@ -106,7 +113,9 @@ class _HomePageState extends State<HomePage> {
                     height: 180,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                        color: Colors.blue[100],
+                        border: Border.all(
+                            color: Color.fromARGB(255, 199, 198, 198)),
+                        color: Color.fromARGB(255, 226, 238, 248),
                         borderRadius: BorderRadius.circular(20)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,14 +129,15 @@ class _HomePageState extends State<HomePage> {
                             style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white),
+                                color: Color.fromARGB(255, 184, 184, 184)),
                           ),
                         ),
                         const Padding(
                           padding: const EdgeInsets.only(left: 30, top: 10),
                           child: Text(
                             "Uang yang ada di dompet",
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 88, 88, 88)),
                           ),
                         ),
                         Padding(
@@ -142,13 +152,15 @@ class _HomePageState extends State<HomePage> {
                                             locale: 'id-ID', symbol: "Rp. ")
                                         .format(totalOut),
                                     style: TextStyle(
-                                        color: Colors.pink,
+                                        color:
+                                            Color.fromARGB(255, 245, 63, 124),
                                         fontWeight: FontWeight.w500),
                                   ),
                                   Text("Jumlah uang keluar",
                                       style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.pink))
+                                          color: Color.fromARGB(
+                                              255, 245, 63, 124)))
                                 ],
                               ),
                               Column(
@@ -158,12 +170,12 @@ class _HomePageState extends State<HomePage> {
                                               locale: 'id-ID', symbol: 'Rp. ')
                                           .format(totalIn),
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w500,
                                           color: Colors.green)),
                                   Text(
                                     "Jumlah uang Masuk",
                                     style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w500,
                                         color: Colors.green),
                                   )
                                 ],
@@ -182,28 +194,40 @@ class _HomePageState extends State<HomePage> {
                       height: 600,
                       child: ListView.builder(
                           itemCount: datas.length,
-                          itemBuilder: (context, index) => Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Card_list(
-                                  datas[index].balance,
-                                  datas[index].catatan,
-                                  datas[index].category,
-                                  onTap: () {
-                                    print("Delet");
-                                    dialogdelte(
-                                        Cash(id: datas[index].id), index);
-                                  },
-                                  onTapUpdate: () {
-                                    print("update");
-                                    updateDialog(
-                                        datas[index].id, datas[index].category);
-                                    balance.text =
-                                        datas[index].balance.toString();
-                                    catatan.text = datas[index].catatan;
-                                    category.text = datas[index].category;
-                                  },
-                                ),
-                              ))),
+                          itemBuilder: (context, index) {
+                            print(datas[index].status);
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Card_list(
+                                Cash(
+                                    debit: datas[index].debit,
+                                    credit: datas[index].credit,
+                                    catatan: datas[index].catatan,
+                                    status: datas[index].status,
+                                    category: datas[index].category,
+                                    date: datas[index].date),
+                                onTap: () {
+                                  print("Delet");
+                                  dialogdelte(Cash(id: datas[index].id), index);
+                                },
+                                onTapUpdate: () {
+                                  print("update");
+                                  updateDialog(
+                                      datas[index].id, datas[index].category);
+
+                                  (datas[index].category == "Masuk")
+                                      ? debit.text =
+                                          datas[index].debit.toString()
+                                      : credit.text =
+                                          datas[index].credit.toString();
+                                  catatan.text = datas[index].catatan;
+                                  status.text = datas[index].category;
+
+                                  setState(() {});
+                                },
+                              ),
+                            );
+                          })),
                 ],
               )
             ],
@@ -222,11 +246,13 @@ class _HomePageState extends State<HomePage> {
               width: 10,
             ),
             FloatingActionButton(
-              onPressed: (total == 0)
-                  ? null
-                  : () async {
-                      await outBalance();
-                    },
+              onPressed: () async {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return OutBalance();
+                    });
+              },
               child: Icon(MdiIcons.minus),
             )
           ],
@@ -235,10 +261,11 @@ class _HomePageState extends State<HomePage> {
 
   Future addBalance() async {
     setState(() {
-      balance.text = '';
+      debit.text = '';
       catatan.text = '';
-      category.text = '';
+      status.text = '';
     });
+
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -252,7 +279,7 @@ class _HomePageState extends State<HomePage> {
               TextField(
                 keyboardType: TextInputType.number,
                 autofocus: true,
-                controller: balance,
+                controller: debit,
                 decoration: InputDecoration(
                     border: OutlineInputBorder(), hintText: "Jumlah Uang"),
               ),
@@ -272,13 +299,14 @@ class _HomePageState extends State<HomePage> {
           actions: <Widget>[
             new FlatButton(
               onPressed: () {
+                int c = 0;
                 var data = addItem(Cash(
-                    balance: int.parse(balance.text),
+                    credit: c,
+                    debit: int.parse(debit.text),
                     catatan: catatan.text,
-                    category: category_masuk));
+                    category: status_masuk,
+                    status: "TopUp"));
 
-                catatan.text = "";
-                balance.text = "";
                 setState(() {});
                 Navigator.of(context).pop(data);
               },
@@ -293,58 +321,14 @@ class _HomePageState extends State<HomePage> {
 
   Future outBalance() async {
     setState(() {
-      balance.text = '';
+      debit.text = '';
       catatan.text = '';
-      category.text = '';
+      status.text = '';
     });
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Uang Keluar'),
-          content: new Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextField(
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                controller: balance,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), hintText: "Jumlah Uang"),
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              TextField(
-                controller: catatan,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), hintText: "Catatan"),
-              ),
-              SizedBox(
-                height: 8,
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            new FlatButton(
-              onPressed: () {
-                var data = addItem(Cash(
-                    balance: -int.parse(balance.text),
-                    catatan: catatan.text,
-                    category: categoty_keluar));
-                catatan.text = "";
-                balance.text = "";
-                setState(() {});
-                Navigator.of(context).pop(data);
-              },
-              textColor: Theme.of(context).primaryColor,
-              child: const Text('Tambah'),
-            ),
-          ],
-        );
-      },
+      builder: (BuildContext context) {},
     );
   }
 
@@ -362,7 +346,7 @@ class _HomePageState extends State<HomePage> {
               TextField(
                 keyboardType: TextInputType.number,
                 autofocus: true,
-                controller: balance,
+                controller: (categoryy == "Masuk") ? debit : credit,
                 decoration: InputDecoration(
                     border: OutlineInputBorder(), hintText: "Jumlah Uang"),
               ),
@@ -379,11 +363,10 @@ class _HomePageState extends State<HomePage> {
               ),
               TextField(
                 enabled: false,
-                controller: category,
+                controller: status,
+                style: TextStyle(color: Colors.grey),
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Category",
-                    labelText: "Category"),
+                    border: OutlineInputBorder(), labelText: "Category"),
               ),
               SizedBox(
                 height: 8,
@@ -393,7 +376,7 @@ class _HomePageState extends State<HomePage> {
           actions: <Widget>[
             new FlatButton(
               onPressed: () {
-                update(id);
+                update(id, categoryy);
                 Navigator.pop(context);
               },
               textColor: Theme.of(context).primaryColor,
@@ -412,7 +395,7 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Delet Data'),
-          content: new Column(
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[Text("Apakah anda ingin menghapus?")],
@@ -428,7 +411,7 @@ class _HomePageState extends State<HomePage> {
               textColor: Theme.of(context).primaryColor,
               child: const Text('Ya'),
             ),
-            new FlatButton(
+            FlatButton(
               onPressed: () {
                 Navigator.pop(context);
               },

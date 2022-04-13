@@ -2,16 +2,28 @@ part of 'models.dart';
 
 class Cash {
   int id;
-  int balance;
+  int debit;
+  int credit;
   String catatan;
+  String status;
   String category;
+  String date;
 
-  Cash({this.id, this.balance, this.catatan, this.category});
+  Cash(
+      {this.id,
+      this.debit,
+      this.credit,
+      this.catatan,
+      this.category,
+      this.status,
+      this.date});
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
       'id': id,
-      'balance': balance,
+      'debit': debit,
+      'credit': credit,
       'catatan': catatan,
+      'status': status,
       'category': category,
     };
 
@@ -21,8 +33,11 @@ class Cash {
   factory Cash.fromMap(Map<String, dynamic> data) {
     return Cash(
         id: data['id'],
-        balance: data['balance'],
+        debit: data['debit'],
+        credit: data['credit'],
         catatan: data['catatan'],
-        category: data['category']);
+        category: data['category'],
+        status: data['status'],
+        date: data['createdAt']);
   }
 }

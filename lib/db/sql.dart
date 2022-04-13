@@ -10,8 +10,10 @@ class DBHelper {
   static Future<void> createTables(sql.Database database) async {
     await database.execute("""CREATE TABLE uangku(
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        balance INTEGER,
+        debit INTEGER,
+        credit INTEGER,
         catatan TEXT,
+        status TEXT,
         category TEXT,
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
@@ -42,33 +44,35 @@ class DBHelper {
 
     return List.generate(maps.length, (index) {
       return Cash(
-        id: maps[index]['id'],
-        balance: maps[index]['balance'],
-        catatan: maps[index]['catatan'],
-        category: maps[index]['category'],
-      );
+          id: maps[index]['id'],
+          credit: maps[index]['credit'],
+          debit: maps[index]['debit'],
+          catatan: maps[index]['catatan'],
+          category: maps[index]['category'],
+          status: maps[index]['status'],
+          date: maps[index]['createdAt']);
     });
   }
 
   static Future calculate() async {
     final db = await DBHelper.db();
-    final total = await db.rawQuery("SELECT SUM(balance) AS total FROM uangku");
-    print(total);
+    final total = await db
+        .rawQuery("SELECT SUM(debit) - SUM(credit) AS total FROM uangku");
     return total.toList();
   }
 
   static Future calculateIn() async {
     final db = await DBHelper.db();
-    final totalIn = await db.rawQuery(
-        "SELECT  SUM(balance) AS inbalance  FROM uangku where category = 'Masuk'");
+    final totalIn =
+        await db.rawQuery("SELECT  SUM(debit) AS inbalance  FROM uangku");
 
     return totalIn.toList();
   }
 
   static Future calculateOut() async {
     final db = await DBHelper.db();
-    final totalIn = await db.rawQuery(
-        "SELECT  SUM(balance) AS outbalance  FROM uangku where category = 'Keluar'");
+    final totalIn =
+        await db.rawQuery("SELECT  SUM(credit) AS outbalance  FROM uangku");
     return totalIn.toList();
   }
 
@@ -80,10 +84,11 @@ class DBHelper {
   }
 
   static Future<int> upadateData(
-      int id, int balance, String catatan, String category) async {
+      int id, int debit, int credit, String catatan, String category) async {
     final db = await DBHelper.db();
     final data = {
-      'balance': balance,
+      'debit': debit,
+      'credit': credit,
       'catatan': catatan,
       'category': category,
       'createdAt': DateTime.now().toString()
