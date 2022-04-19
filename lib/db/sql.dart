@@ -1,10 +1,4 @@
-import 'dart:io';
-
-import 'package:path_provider/path_provider.dart';
-import 'package:personalcahs/model/models.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart' as sql;
-import 'dart:async';
+part of 'db.dart';
 
 class DBHelper {
   static Future<void> createTables(sql.Database database) async {
@@ -18,6 +12,9 @@ class DBHelper {
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
       """);
+
+    await database.execute(
+        """CREATE TABLE category(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, category TEXT)""");
   }
 
   static Future<sql.Database> db() async {
@@ -30,6 +27,30 @@ class DBHelper {
     );
   }
 
+// TODO : CATEGORY
+  static Future<int> craateCategoty(Category category) async {
+    final db = await DBHelper.db();
+    final id = await db.insert('category', category.toMap(),
+        conflictAlgorithm: sql.ConflictAlgorithm.replace);
+    return id;
+  }
+
+  static Future<int> deleteCategory(int id) async {
+    final db = await DBHelper.db();
+    final result =
+        await db.delete('category', where: 'id =? ', whereArgs: [id]);
+    return result;
+  }
+
+  static Future<List<Category>> getAllCategory() async {
+    final db = await DBHelper.db();
+    final maps = await db.query('category', orderBy: "id DESC");
+    return List.generate(maps.length, (index) {
+      return Category(id: maps[index]['id'], category: maps[index]['category']);
+    });
+  }
+
+// TODO : KEUANGAN
   static Future<int> createItem(Cash cash) async {
     final db = await DBHelper.db();
 
@@ -84,7 +105,12 @@ class DBHelper {
   }
 
   static Future<int> upadateData(
-      int id, int debit, int credit, String catatan, String category) async {
+    int id,
+    int debit,
+    int credit,
+    String catatan,
+    String category,
+  ) async {
     final db = await DBHelper.db();
     final data = {
       'debit': debit,

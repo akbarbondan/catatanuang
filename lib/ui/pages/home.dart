@@ -20,6 +20,7 @@ class _HomePageState extends State<HomePage> {
   List<Cash> datas = [];
   List<String> items;
   String selected;
+  String datetime;
   void refreshData() async {
     final data = await DBHelper.getItems();
     setState(() {
@@ -51,11 +52,12 @@ class _HomePageState extends State<HomePage> {
   Future<void> update(int id, String category) async {
     final db = DBHelper.db();
     await DBHelper.upadateData(
-        id,
-        (category == "Masuk") ? int.parse(debit.text) : 0,
-        (category == "Keluar") ? int.parse(credit.text) : 0,
-        catatan.text,
-        category);
+      id,
+      (category == "Masuk") ? int.parse(debit.text) : 0,
+      (category == "Keluar") ? int.parse(credit.text) : 0,
+      catatan.text,
+      category,
+    );
     calculate();
     calculateinBalance();
     calculateoutBalance();
@@ -103,25 +105,26 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Container(
-          margin: EdgeInsets.all(20),
           child: ListView(
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                            color: Color.fromARGB(255, 199, 198, 198)),
-                        color: Color.fromARGB(255, 226, 238, 248),
-                        borderRadius: BorderRadius.circular(20)),
+                    decoration: BoxDecoration(color: Colors.blue),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(top: 20, left: 30),
+                          padding: const EdgeInsets.only(top: 50),
+                          child: const Center(
+                            child: Text(
+                              "My balance",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                        Center(
                           child: Text(
                             NumberFormat.currency(
                                     locale: 'id-ID', symbol: 'Rp. ')
@@ -129,15 +132,7 @@ class _HomePageState extends State<HomePage> {
                             style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.w700,
-                                color: Color.fromARGB(255, 184, 184, 184)),
-                          ),
-                        ),
-                        const Padding(
-                          padding: const EdgeInsets.only(left: 30, top: 10),
-                          child: Text(
-                            "Uang yang ada di dompet",
-                            style: TextStyle(
-                                color: Color.fromARGB(255, 88, 88, 88)),
+                                color: Colors.white),
                           ),
                         ),
                         Padding(
@@ -152,15 +147,15 @@ class _HomePageState extends State<HomePage> {
                                             locale: 'id-ID', symbol: "Rp. ")
                                         .format(totalOut),
                                     style: TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 245, 63, 124),
+                                        fontSize: 20,
+                                        color: Colors.white,
                                         fontWeight: FontWeight.w500),
                                   ),
                                   Text("Jumlah uang keluar",
                                       style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          color: Color.fromARGB(
-                                              255, 245, 63, 124)))
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                      ))
                                 ],
                               ),
                               Column(
@@ -170,13 +165,16 @@ class _HomePageState extends State<HomePage> {
                                               locale: 'id-ID', symbol: 'Rp. ')
                                           .format(totalIn),
                                       style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.green)),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                      )),
                                   Text(
                                     "Jumlah uang Masuk",
                                     style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.green),
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                    ),
                                   )
                                 ],
                               )
@@ -189,147 +187,194 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(
                     height: 10,
                   ),
-                  const Text("List transaksi"),
                   Container(
-                      height: 600,
-                      child: ListView.builder(
-                          itemCount: datas.length,
-                          itemBuilder: (context, index) {
-                            print(datas[index].status);
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Card_list(
-                                Cash(
-                                    debit: datas[index].debit,
-                                    credit: datas[index].credit,
-                                    catatan: datas[index].catatan,
-                                    status: datas[index].status,
-                                    category: datas[index].category,
-                                    date: datas[index].date),
-                                onTap: () {
-                                  print("Delet");
-                                  dialogdelte(Cash(id: datas[index].id), index);
+                    margin: EdgeInsets.fromLTRB(20, 10, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              RaisedButton(
+                                color: Colors.white,
+                                onPressed: () {
+                                  Get.to(FilterPage());
                                 },
-                                onTapUpdate: () {
-                                  print("update");
-                                  updateDialog(
-                                      datas[index].id, datas[index].category);
-
-                                  (datas[index].category == "Masuk")
-                                      ? debit.text =
-                                          datas[index].debit.toString()
-                                      : credit.text =
-                                          datas[index].credit.toString();
-                                  catatan.text = datas[index].catatan;
-                                  status.text = datas[index].category;
-
-                                  setState(() {});
-                                },
+                                child: Container(
+                                    height: 20,
+                                    child: Text("Filter",
+                                        style: TextStyle(color: Colors.blue))),
                               ),
-                            );
-                          })),
+                              RaisedButton(
+                                color: Colors.white,
+                                onPressed: () {
+                                  Get.to(FormCategoriPag());
+                                },
+                                child: Container(
+                                    height: 20,
+                                    child: Text("Create category",
+                                        style: TextStyle(color: Colors.blue))),
+                              )
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          "List transaksi",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        Container(
+                            height: 600,
+                            child: (datas.isEmpty)
+                                ? Center(
+                                    child: Container(
+                                      height: 80,
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            MdiIcons.fileSearchOutline,
+                                            size: 50,
+                                            color: Colors.grey,
+                                          ),
+                                          Text(
+                                            "Belum ada data transaksi",
+                                            style:
+                                                TextStyle(color: Colors.grey),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    itemCount: datas.length,
+                                    itemBuilder: (context, index) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Card_list(
+                                          Cash(
+                                              debit: datas[index].debit,
+                                              credit: datas[index].credit,
+                                              catatan: datas[index].catatan,
+                                              status: datas[index].status,
+                                              category: datas[index].category,
+                                              date: datas[index].date),
+                                          onTap: () {
+                                            dialogdelte(
+                                                Cash(id: datas[index].id),
+                                                index);
+                                          },
+                                          onTapUpdate: () {
+                                            updateDialog(datas[index].id,
+                                                datas[index].category);
+                                            (datas[index].category == "Masuk")
+                                                ? debit.text = datas[index]
+                                                    .debit
+                                                    .toString()
+                                                : credit.text = datas[index]
+                                                    .credit
+                                                    .toString();
+                                            catatan.text = datas[index].catatan;
+                                            status.text = datas[index].category;
+                                            datetime = datas[index].date;
+                                          },
+                                        ),
+                                      );
+                                    })),
+                      ],
+                    ),
+                  )
                 ],
               )
             ],
           ),
         ),
-        floatingActionButton: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FloatingActionButton(
-              onPressed: () async {
-                await addBalance();
-              },
-              child: Icon(Icons.add),
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            FloatingActionButton(
-              onPressed: () async {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return OutBalance();
-                    });
-              },
-              child: Icon(MdiIcons.minus),
-            )
-          ],
-        ));
-  }
-
-  Future addBalance() async {
-    setState(() {
-      debit.text = '';
-      catatan.text = '';
-      status.text = '';
-    });
-
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Uang masuk'),
-          content: new Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextField(
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                controller: debit,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), hintText: "Jumlah Uang"),
+        floatingActionButton: Container(
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.only(left: 30),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return Inbalance();
+                      });
+                },
+                child: Container(
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add, color: Colors.white),
+                        Text(
+                          "CASH IN",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  ),
+                  width: MediaQuery.of(context).size.width / 2 - 24,
+                  height: 45,
+                  decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                            blurRadius: 4,
+                            color: Color.fromARGB(255, 139, 139, 139),
+                            offset: Offset(0, 1))
+                      ]),
+                ),
               ),
               SizedBox(
-                height: 8,
+                width: 10,
               ),
-              TextField(
-                controller: catatan,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), hintText: "Catatan"),
-              ),
-              SizedBox(
-                height: 8,
+              GestureDetector(
+                onTap: (total <= 0)
+                    ? () {
+                        Get.snackbar("Belum ada uang", "Uang anda masih Rp 0");
+                      }
+                    : () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return OutBalance();
+                            });
+                      },
+                child: Container(
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(MdiIcons.minus, color: Colors.white),
+                        Text(
+                          "CASH OUT",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  ),
+                  width: MediaQuery.of(context).size.width / 2 - 24,
+                  height: 45,
+                  decoration: BoxDecoration(
+                      color: Colors.pink,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                            blurRadius: 4,
+                            color: Color.fromARGB(255, 139, 139, 139),
+                            offset: Offset(0, 1))
+                      ]),
+                ),
               ),
             ],
           ),
-          actions: <Widget>[
-            new FlatButton(
-              onPressed: () {
-                int c = 0;
-                var data = addItem(Cash(
-                    credit: c,
-                    debit: int.parse(debit.text),
-                    catatan: catatan.text,
-                    category: status_masuk,
-                    status: "TopUp"));
-
-                setState(() {});
-                Navigator.of(context).pop(data);
-              },
-              textColor: Theme.of(context).primaryColor,
-              child: const Text('Tambah'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future outBalance() async {
-    setState(() {
-      debit.text = '';
-      catatan.text = '';
-      status.text = '';
-    });
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {},
-    );
+        ));
   }
 
   Future updateDialog(int id, String categoryy) async {
@@ -371,10 +416,42 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 height: 8,
               ),
+              Row(
+                children: [
+                  TextButton(
+                      onPressed: () {
+                        DatePicker.showDatePicker(context,
+                            showTitleActions: true,
+                            minTime: DateTime(2012, 3, 5),
+                            maxTime: DateTime(2030, 6, 7), onChanged: (date) {
+                          print('change $date');
+                        }, onConfirm: (date) {
+                          print('confirm $date');
+                          setState(() {
+                            datetime = date.toString();
+                          });
+                        }, currentTime: DateTime.now(), locale: LocaleType.id);
+                      },
+                      child: Icon(
+                        MdiIcons.calendar,
+                      )),
+                  Text(
+                    Shared.customeDateTime(DateTime.parse(datetime)),
+                    style: TextStyle(color: Colors.grey),
+                  )
+                ],
+              )
             ],
           ),
           actions: <Widget>[
-            new FlatButton(
+            FlatButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              textColor: Theme.of(context).primaryColor,
+              child: const Text('Batal'),
+            ),
+            FlatButton(
               onPressed: () {
                 update(id, categoryy);
                 Navigator.pop(context);
@@ -404,9 +481,8 @@ class _HomePageState extends State<HomePage> {
             new FlatButton(
               onPressed: () {
                 delete(cash.id, position);
-                Navigator.pop(context);
-
-                refreshData();
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => HomePage()));
               },
               textColor: Theme.of(context).primaryColor,
               child: const Text('Ya'),

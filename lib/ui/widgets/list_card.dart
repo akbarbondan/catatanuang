@@ -67,7 +67,6 @@ class Card_list extends StatelessWidget {
               height: 60,
               width: 60,
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -75,12 +74,10 @@ class Card_list extends StatelessWidget {
                     ? MdiIcons.food
                     : (cash.status == "Traveling")
                         ? MdiIcons.bus
-                        : MdiIcons.gold,
-                color: (cash.status == "Makan")
-                    ? Colors.orange
-                    : (cash.status == "Traveling")
-                        ? Colors.blue
-                        : Colors.amber,
+                        : (cash.status == "Masuk")
+                            ? MdiIcons.gold
+                            : MdiIcons.minus,
+                color: Colors.grey,
               ),
             ),
             SizedBox(width: 4),
@@ -96,21 +93,14 @@ class Card_list extends StatelessWidget {
                             ? cash.debit
                             : cash.credit),
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: (cash.category == "Masuk")
-                          ? Colors.green
-                          : Colors.pink,
-                    ),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromARGB(255, 128, 125, 125)),
                   ),
-                  Text(
-                    cash.catatan,
-                    style: TextStyle(
-                        fontSize: 13,
-                        color: (cash.category == "Masuk")
-                            ? Colors.green
-                            : Colors.pink),
-                  ),
+                  Text(cash.catatan,
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: Color.fromARGB(255, 150, 149, 149))),
                   Text(
                     customeDateTime(),
                     style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -118,15 +108,20 @@ class Card_list extends StatelessWidget {
                 ],
               ),
             ),
-            GestureDetector(
-              child: Icon(MdiIcons.pencil, color: Colors.grey),
-              onTap: onTapUpdate,
-            ),
+            (onTapUpdate != null)
+                ? GestureDetector(
+                    child: Icon(MdiIcons.pencil, color: Colors.grey),
+                    onTap: onTapUpdate,
+                  )
+                : SizedBox(),
             SizedBox(
               width: 8,
             ),
-            GestureDetector(
-                child: Icon(MdiIcons.delete, color: Colors.pink), onTap: onTap),
+            (onTap != null)
+                ? GestureDetector(
+                    child: Icon(MdiIcons.delete, color: Colors.grey),
+                    onTap: onTap)
+                : SizedBox(),
           ],
         ),
       ),

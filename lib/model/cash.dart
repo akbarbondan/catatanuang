@@ -25,6 +25,7 @@ class Cash {
       'catatan': catatan,
       'status': status,
       'category': category,
+      'createdAt': date
     };
 
     return map;
