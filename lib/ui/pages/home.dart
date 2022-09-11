@@ -25,6 +25,12 @@ class _HomePageState extends State<HomePage> {
     final data = await DBHelper.getItems();
     setState(() {
       datas = data;
+      if (datas.isEmpty) {
+        datas.clear();
+        total = 0;
+        totalIn = 0;
+        totalOut = 0;
+      }
     });
   }
 
@@ -44,6 +50,7 @@ class _HomePageState extends State<HomePage> {
     calculate();
     calculateinBalance();
     calculateoutBalance();
+
     setState(() {
       datas.removeAt(index);
     });
@@ -104,196 +111,304 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
-          child: ListView(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        body: Stack(
+          children: [
+            Container(
+              color: Colors.blue,
+            ),
+            SafeArea(
+                child: Container(
+              padding: EdgeInsets.only(left: 24, right: 24),
+              child: Column(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(color: Colors.blue),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 50),
-                          child: const Center(
-                            child: Text(
-                              "My balance",
-                              style: TextStyle(color: Colors.white),
-                            ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Hai Kamu",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500),
                           ),
-                        ),
-                        Center(
-                          child: Text(
+                          SizedBox(
+                            height: 8,
+                          ),
+                          Text(
+                            "Uang Kamu Tersisa",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w300),
+                          ),
+                          SizedBox(
+                            height: 2,
+                          ),
+                          Text(
                             NumberFormat.currency(
                                     locale: 'id-ID', symbol: 'Rp. ')
                                 .format(total),
                             style: const TextStyle(
-                                fontSize: 30,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white),
                           ),
+                        ],
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(60),
+                        child: Image.asset(
+                          'assets/photo.png',
+                          height: 60,
+                          fit: BoxFit.cover,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(30),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                children: [
-                                  Text(
-                                    NumberFormat.currency(
-                                            locale: 'id-ID', symbol: "Rp. ")
-                                        .format(totalOut),
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                  Text("Jumlah uang keluar",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white,
-                                      ))
-                                ],
+                      )
+                    ],
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.fromLTRB(8, 10, 8, 10),
+                        height: 90,
+                        width: 160,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.white),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Pemasukan',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.grey),
+                                ),
+                                Icon(
+                                  Icons.arrow_circle_up_rounded,
+                                  color: Colors.green[300],
+                                )
+                              ],
+                            ),
+                            Text(
+                              NumberFormat.currency(
+                                      locale: 'id-ID', symbol: 'Rp. ')
+                                  .format(totalIn),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.green[300],
                               ),
-                              Column(
-                                children: [
-                                  Text(
-                                      NumberFormat.currency(
-                                              locale: 'id-ID', symbol: 'Rp. ')
-                                          .format(totalIn),
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white,
-                                      )),
-                                  Text(
-                                    "Jumlah uang Masuk",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(8, 10, 8, 10),
+                        height: 90,
+                        width: 160,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.white),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Pengeluaran',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.grey),
+                                ),
+                                Icon(
+                                  Icons.arrow_circle_down_sharp,
+                                  color: Colors.red[300],
+                                )
+                              ],
+                            ),
+                            Text(
+                                NumberFormat.currency(
+                                        locale: 'id-ID', symbol: 'Rp. ')
+                                    .format(totalOut),
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.red[300],
+                                    overflow: TextOverflow.clip)),
+                          ],
+                        ),
+                      )
+                    ],
                   ),
-                  const SizedBox(
-                    height: 10,
+                  SizedBox(
+                    height: 20,
                   ),
+
+                  // Button filter
                   Container(
-                    margin: EdgeInsets.fromLTRB(20, 10, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Container(
+                        InkWell(
+                          onTap: () {
+                            Get.to(FilterPage());
+                          },
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              RaisedButton(
-                                color: Colors.white,
-                                onPressed: () {
-                                  Get.to(FilterPage());
-                                },
-                                child: Container(
-                                    height: 20,
-                                    child: Text("Filter",
-                                        style: TextStyle(color: Colors.blue))),
+                              Icon(Icons.filter_alt_sharp, color: Colors.white),
+                              SizedBox(
+                                width: 6,
                               ),
-                              RaisedButton(
-                                color: Colors.white,
-                                onPressed: () {
-                                  Get.to(FormCategoriPag());
-                                },
-                                child: Container(
-                                    height: 20,
-                                    child: Text("Create category",
-                                        style: TextStyle(color: Colors.blue))),
-                              )
+                              Text("Filter",
+                                  style: TextStyle(color: Colors.white))
                             ],
                           ),
                         ),
                         SizedBox(
-                          height: 10,
+                          width: 20,
                         ),
-                        Text(
-                          "List transaksi",
-                          style: TextStyle(color: Colors.grey),
+                        InkWell(
+                          onTap: () {
+                            Get.to(FormCategoriPag());
+                          },
+                          child: Row(
+                            children: [
+                              Icon(Icons.category, color: Colors.white),
+                              SizedBox(
+                                width: 6,
+                              ),
+                              Text("Create Category",
+                                  style: TextStyle(color: Colors.white))
+                            ],
+                          ),
                         ),
-                        Container(
-                            height: 600,
-                            child: (datas.isEmpty)
-                                ? Center(
-                                    child: Container(
-                                      height: 80,
-                                      child: Column(
-                                        children: [
-                                          Icon(
-                                            MdiIcons.fileSearchOutline,
-                                            size: 50,
-                                            color: Colors.grey,
-                                          ),
-                                          Text(
-                                            "Belum ada data transaksi",
-                                            style:
-                                                TextStyle(color: Colors.grey),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    itemCount: datas.length,
-                                    itemBuilder: (context, index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(top: 8),
-                                        child: Card_list(
-                                          Cash(
-                                              debit: datas[index].debit,
-                                              credit: datas[index].credit,
-                                              catatan: datas[index].catatan,
-                                              status: datas[index].status,
-                                              category: datas[index].category,
-                                              date: datas[index].date),
-                                          onTap: () {
-                                            dialogdelte(
-                                                Cash(id: datas[index].id),
-                                                index);
-                                          },
-                                          onTapUpdate: () {
-                                            updateDialog(datas[index].id,
-                                                datas[index].category);
-                                            (datas[index].category == "Masuk")
-                                                ? debit.text = datas[index]
-                                                    .debit
-                                                    .toString()
-                                                : credit.text = datas[index]
-                                                    .credit
-                                                    .toString();
-                                            catatan.text = datas[index].catatan;
-                                            status.text = datas[index].category;
-                                            datetime = datas[index].date;
-                                          },
-                                        ),
-                                      );
-                                    })),
                       ],
                     ),
-                  )
+                  ),
                 ],
-              )
-            ],
-          ),
+              ),
+            )),
+            Expanded(
+                child: Container(
+              margin: EdgeInsets.only(top: 280),
+              padding: EdgeInsets.fromLTRB(24, 30, 24, 0),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(48),
+                      topRight: Radius.circular(48))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "List Transaksi",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  (datas.isEmpty)
+                      ? Expanded(
+                          child: Center(
+                            child: Container(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    MdiIcons.fileSearchOutline,
+                                    size: 50,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    "Belum ada data transaksi",
+                                    style: TextStyle(color: Colors.grey),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      : Expanded(
+                          child: ListView.builder(
+                              padding: EdgeInsets.only(top: 4),
+                              itemCount: datas.length,
+                              itemBuilder: (context, index) {
+                                final item = datas[index].catatan;
+                                return Dismissible(
+                                  key: UniqueKey(),
+                                  onDismissed: (direction) {
+                                    setState(() {
+                                      delete(datas[index].id, index);
+                                    });
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                '$item berhasil dihapus')));
+                                  },
+                                  background: Container(
+                                    padding: EdgeInsets.only(right: 8),
+                                    color: Colors.red,
+                                    child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          'Menghapus Transaksi $item',
+                                          style: TextStyle(color: Colors.white),
+                                          textAlign: TextAlign.start,
+                                        )),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      updateDialog(datas[index].id,
+                                          datas[index].category);
+                                      (datas[index].category == "Masuk")
+                                          ? debit.text =
+                                              datas[index].debit.toString()
+                                          : credit.text =
+                                              datas[index].credit.toString();
+                                      catatan.text = datas[index].catatan;
+                                      status.text = datas[index].category;
+                                      datetime = datas[index].date;
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Card_list(
+                                        Cash(
+                                            debit: datas[index].debit,
+                                            credit: datas[index].credit,
+                                            catatan: datas[index].catatan,
+                                            status: datas[index].status,
+                                            category: datas[index].category,
+                                            date: datas[index].date),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+                        ),
+                ],
+              ),
+            )),
+          ],
         ),
         floatingActionButton: Container(
           width: MediaQuery.of(context).size.width,
-          padding: EdgeInsets.only(left: 30),
+          padding: const EdgeInsets.only(left: 30),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -331,7 +446,7 @@ class _HomePageState extends State<HomePage> {
                       ]),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 10,
               ),
               GestureDetector(
@@ -392,28 +507,28 @@ class _HomePageState extends State<HomePage> {
                 keyboardType: TextInputType.number,
                 autofocus: true,
                 controller: (categoryy == "Masuk") ? debit : credit,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     border: OutlineInputBorder(), hintText: "Jumlah Uang"),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 8,
               ),
               TextField(
                 controller: catatan,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     border: OutlineInputBorder(), hintText: "Catatan"),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 8,
               ),
               TextField(
                 enabled: false,
                 controller: status,
-                style: TextStyle(color: Colors.grey),
-                decoration: InputDecoration(
+                style: const TextStyle(color: Colors.grey),
+                decoration: const InputDecoration(
                     border: OutlineInputBorder(), labelText: "Category"),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 8,
               ),
               Row(
@@ -432,7 +547,7 @@ class _HomePageState extends State<HomePage> {
                           });
                         }, currentTime: DateTime.now(), locale: LocaleType.id);
                       },
-                      child: Icon(
+                      child: const Icon(
                         MdiIcons.calendar,
                       )),
                   Text(
@@ -475,7 +590,7 @@ class _HomePageState extends State<HomePage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[Text("Apakah anda ingin menghapus?")],
+            children: [Text("Apakah anda ingin menghapus?")],
           ),
           actions: <Widget>[
             new FlatButton(

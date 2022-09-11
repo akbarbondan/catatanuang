@@ -49,18 +49,29 @@ class _FilterPageState extends State<FilterPage> {
     return Scaffold(
       body: SafeArea(
           child: Container(
-        padding: EdgeInsets.only(top: 40),
-        margin: EdgeInsets.symmetric(horizontal: 10),
+        // padding: EdgeInsets.only(top: 40),
+        margin: EdgeInsets.symmetric(horizontal: 24),
         child: ListView(
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  child: Icon(Icons.arrow_back),
-                  onTap: () {
-                    Get.back();
-                  },
+                Stack(
+                  children: [
+                    GestureDetector(
+                      child: Icon(Icons.arrow_back),
+                      onTap: () {
+                        Get.back();
+                      },
+                    ),
+                    Center(
+                      child: Text(
+                        "Filter Pengeluaran",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w700),
+                      ),
+                    )
+                  ],
                 ),
                 SizedBox(
                   height: 30,
